@@ -7,7 +7,7 @@ n_sites <- 50000
 n_v_sites <- 50
 
 # read in geographic and environmental distances
-distances <- read.table("sitta_distances.txt", header=T, stringsAsFactors=F)
+distances <- read.table("sitta_distances_new.txt", header=T, stringsAsFactors=F)
 
 # read in unsorted fst values for all windows
 fst_values <- read.table("window_fst.txt", header=T, stringsAsFactors=F)
@@ -54,7 +54,7 @@ for(a in 1:length(scaffolds)) {
 			ibd_r2[[counter]] <- regression_summary$r.squared
 			ibd_p[[counter]] <- regression_summary$coefficients[2,4]
 			# IBE?
-			regression_summary <- summary(lm(dist_rep ~ distances$e_dist))
+			regression_summary <- summary(lm(dist_rep ~ distances$new_e_distances))
 			ibe_r2[[counter]] <- regression_summary$r.squared
 			ibe_p[[counter]] <- regression_summary$coefficients[2,4]
 			
@@ -169,7 +169,7 @@ title("IBD", adj=0.01, line=-1, font.main=1)
 fst <- c()
 # reorder Fst values to match distance matrix
 for(d in 1:nrow(distances)) {
-	d_rep <- fst_values[(distances$Pop1[d] == b_rep$pop1 & distances$Pop2[d] == b_rep$pop2) | (distances$Pop2[d] == b_rep$pop1 & distances$Pop1[d] == b_rep$pop2), ]
+	d_rep <- fst_values[(distances$Pop1[d] == fst_values$pop1 & distances$Pop2[d] == fst_values$pop2) | (distances$Pop2[d] == fst_values$pop1 & distances$Pop1[d] == fst_values$pop2), ]
 	d_rep <- sum(d_rep$number_variable_sites * d_rep$calculated_stat) / sum(d_rep$number_variable_sites)
 	fst <- c(fst, d_rep)
 }
