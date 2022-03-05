@@ -28,5 +28,11 @@ ReLERNN_SIMULATE \
     --seed ${SEED} \
     --assumedGenTime ${GENTIME} \
     --unphased
+
+# Training
+ReLERNN_TRAIN \
+    --projectDir ${DIR} \
+    --seed ${SEED} \
+    --nCPU 40
     
     
