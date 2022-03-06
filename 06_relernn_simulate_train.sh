@@ -34,5 +34,19 @@ ReLERNN_TRAIN \
     --projectDir ${DIR} \
     --seed ${SEED} \
     --nCPU 40
+
+# Predict recombination rates
+ReLERNN_PREDICT \
+    --vcf ${VCF} \
+    --projectDir ${DIR} \
+    --seed ${SEED} \
+    --unphased
     
+# bootstrap and correct
+ReLERNN_BSCORRECT \
+    --projectDir ${DIR} \
+    --seed ${SEED} \
+    --nCPU 40 \
+    --nSlice 100 \
+    --nReps 100
     
