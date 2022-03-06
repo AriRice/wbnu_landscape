@@ -17,7 +17,7 @@ MU="2.506e-9"
 DIR="./relernn_output/"
 VCF="./nuthatch_relernn.vcf"
 GENOME="./wbnu.genome.bed"
-GENTIME="2"
+GENTIME="1"
 
 # Simulate data
 ReLERNN_SIMULATE \
