@@ -1,3 +1,4 @@
+library(ggplot2)
 # no scientific notation
 options(scipen=999)
 
@@ -54,7 +55,7 @@ for(a in 1:length(scaffolds)) {
 			ibd_r2[[counter]] <- regression_summary$r.squared
 			ibd_p[[counter]] <- regression_summary$coefficients[2,4]
 			# IBE?
-			regression_summary <- summary(lm(dist_rep ~ distances$new_e_distances))
+			regression_summary <- summary(lm(dist_rep ~ distances$new_e_distances2))
 			ibe_r2[[counter]] <- regression_summary$r.squared
 			ibe_p[[counter]] <- regression_summary$coefficients[2,4]
 			
@@ -101,6 +102,37 @@ output <- cbind(output, window_pattern_corrected)
 window <- seq(nrow(output))
 output <- cbind(output, window)
 
+# read in recombination rates
+recomb <- read.table("recombination_windows.txt", header=T, stringsAsFactors=F)
+recomb_rep <- list()
+# get the recombination rate for each window
+for(a in 1:nrow(output)) {
+	a_rep <- recomb$recombRate[recomb$chrom == output$chrom[a] & recomb$start == output$start[a]]
+	if(length(a_rep) > 0) {
+		recomb_rep[[a]] <- a_rep
+	} else {
+		print(a)
+		recomb_rep[[a]] <- NA
+	}
+}
+recombRate <- unlist(recomb_rep)
+output <- cbind(output, recombRate)
+# new data frame with missing recombination rate windows removed
+output2 <- output[!is.na(output$recombRate),]
+
+ggplot(output2, aes(x=window_pattern_corrected, y=recombRate, fill=window_pattern_corrected)) + geom_boxplot() + scale_fill_brewer(palette="Dark2") 
+
+plot(output2$recombRate, output2$ibe_r2, pch=19, cex=0.2)
+
+ggplot(output2, aes(x=window_pattern, y=recombRate, fill=window_pattern)) + geom_boxplot() + scale_fill_brewer(palette="Dark2") 
+
+
+# t.test
+IBE_recomb <- output2$recombRate[output$window_pattern_corrected == "IBE"]
+neither_recomb <- output2$recombRate[output$window_pattern_corrected == "Neither"]
+t.test(IBE_recomb, neither_recomb)
+
+
 ################################################
 ################################################
 ################################################
@@ -117,7 +149,7 @@ for(a in 1:length(chr)) {
 	a1 <- output$window[output$chrom == chr[a]]
 	a2 <- a1[length(a1)]
 	a1 <- a1[1]
-	chr_polygons[[a]] <- rbind(c(a1, 0), c(a2, 0), c(a2, 4), c(a1, 4), c(a1, 0))
+	chr_polygons[[a]] <- rbind(c(a1, 0), c(a2, 0), c(a2, 6), c(a1, 6), c(a1, 0))
 }
 
 # set up plotting dimensions
@@ -126,7 +158,7 @@ par(mar=c(0.5,5,1,0))
 
 # plot the corrected p-values (those with p <= 0.05 in black)
 # IBE
-plot(c(-1,-1), ylim=c(0,4), xlim=c(1, total_windows), xaxt="n", col="white", bty="n", cex.axis=1.1, cex.lab=1.3, ylab="-log10(p)", xlab="")
+plot(c(-1,-1), ylim=c(0,6), xlim=c(1, total_windows), xaxt="n", col="white", bty="n", cex.axis=1.1, cex.lab=1.3, ylab="-log10(p-value)", xlab="")
 # plot polygons of scaffolds
 odd <- 0
 for(a in 1:length(chr_polygons)) {
@@ -143,7 +175,7 @@ points(window[output$ibe_p_corrected <= 0.05], -log10(output$ibe_p_corrected[out
 title("IBE", adj=0.01, line=-1, font.main=1)
 
 # IBD
-plot(c(-1,-1), ylim=c(0,4), xlim=c(1, total_windows), xaxt="n", col="white", bty="n", cex.axis=1.1, cex.lab=1.3, ylab="-log10(p)", xlab="")
+plot(c(-1,-1), ylim=c(0,6), xlim=c(1, total_windows), xaxt="n", col="white", bty="n", cex.axis=1.1, cex.lab=1.3, ylab="-log10(p-value)", xlab="")
 # plot polygons of scaffolds
 odd <- 0
 for(a in 1:length(chr_polygons)) {
@@ -176,12 +208,16 @@ for(d in 1:nrow(distances)) {
 distances <- cbind(distances, fst)
 
 par(mfrow=c(1, 3))
-plot(distances$g_dist, distances$e_dist, xlab="Geographic distance (km)", ylab="Environmental distance", pch=19, cex=0.8, xlim=c(0,500), ylim=c(0,3))
-abline(lm(distances$e_dist ~ distances$g_dist))
+par(mar=c(5,5,1,1))
+plot(distances$g_dist, distances$new_e_distances2, xlab="Geographic distance (km)", ylab="Environmental distance", pch=19, cex=0.8, xlim=c(0,500), ylim=c(0,3))
+abline(lm(distances$new_e_distances2 ~ distances$g_dist))
+summary(lm(distances$new_e_distances2 ~ distances$g_dist))
 plot(distances$g_dist, distances$fst, xlab="Geographic distance (km)", ylab="Fst", pch=19, cex=0.8, ylim=c(0,0.2))
 abline(lm(distances$fst ~ distances$g_dist))
-plot(distances$e_dist, distances$fst, xlab="Environmental distance", ylab="Fst", pch=19, cex=0.8, ylim=c(0,0.2))
-abline(lm(distances$fst ~ distances$e_dist))
+summary(lm(distances$fst ~ distances$g_dist))
+plot(distances$new_e_distances2, distances$fst, xlab="Environmental distance", ylab="Fst", pch=19, cex=0.8, ylim=c(0,0.2))
+abline(lm(distances$fst ~ distances$new_e_distances2))
+summary(lm(distances$fst ~ distances$new_e_distances2))
 
 
 
